@@ -1,8 +1,297 @@
 <!DOCTYPE html>
-<html>
-<head><title>Mon premier déploiement CI/CD</title></head>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>welcome://ganfial.learning</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap');
+
+  :root{
+    --void: #08040f;
+    --void-2: #140a26;
+    --cyan: #00fff0;
+    --magenta: #ff2bd6;
+    --amber: #ffb020;
+    --text: #d9d3f0;
+    --text-dim: #7c72a3;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+
+  html,body{
+    height:100%;
+    background:var(--void);
+    overflow:hidden;
+  }
+
+  body{
+    font-family:'Share Tech Mono', monospace;
+    color:var(--text);
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  /* ---------- ambient backdrop ---------- */
+
+  .backdrop{
+    position:fixed;
+    inset:0;
+    background:
+      radial-gradient(ellipse 60% 40% at 50% 8%, rgba(0,255,240,0.12), transparent 60%),
+      radial-gradient(ellipse 70% 50% at 50% 100%, rgba(255,43,214,0.10), transparent 60%),
+      var(--void);
+    z-index:0;
+  }
+
+  .spotlight{
+    position:fixed;
+    inset:0;
+    z-index:1;
+    pointer-events:none;
+    background:radial-gradient(circle 380px at var(--mx,50%) var(--my,40%), rgba(0,255,240,0.06), transparent 70%);
+    transition:background-position .1s linear;
+  }
+
+  .grid-floor{
+    position:fixed;
+    left:-50%;
+    right:-50%;
+    bottom:0;
+    height:55%;
+    z-index:1;
+    perspective:220px;
+    overflow:hidden;
+    pointer-events:none;
+    -webkit-mask-image:linear-gradient(to top, black 40%, transparent 100%);
+            mask-image:linear-gradient(to top, black 40%, transparent 100%);
+  }
+
+  .grid-floor::before{
+    content:"";
+    position:absolute;
+    inset:-100% 0 0 0;
+    background-image:
+      linear-gradient(rgba(0,255,240,0.28) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,240,0.28) 1px, transparent 1px);
+    background-size:60px 60px;
+    transform:rotateX(82deg);
+    transform-origin:bottom;
+    animation:floor-scroll 6s linear infinite;
+  }
+
+  @keyframes floor-scroll{
+    from{ background-position:0 0, 0 0; }
+    to{ background-position:0 60px, 0 0; }
+  }
+
+  .crt{
+    position:fixed;
+    inset:0;
+    z-index:3;
+    pointer-events:none;
+    background:repeating-linear-gradient(
+      to bottom,
+      rgba(0,0,0,0.15) 0px,
+      rgba(0,0,0,0.15) 1px,
+      transparent 2px,
+      transparent 3px
+    );
+    mix-blend-mode:overlay;
+  }
+
+  .vignette{
+    position:fixed;
+    inset:0;
+    z-index:3;
+    pointer-events:none;
+    box-shadow:inset 0 0 18vw rgba(0,0,0,0.85);
+  }
+
+  /* ---------- scene ---------- */
+
+  .scene{
+    position:relative;
+    z-index:2;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+    gap:1.4rem;
+    padding:2rem;
+    max-width:90vw;
+  }
+
+  .boot-log{
+    font-size:clamp(0.7rem, 1.6vw, 0.85rem);
+    color:var(--cyan);
+    text-align:left;
+    min-height:4.6em;
+    line-height:1.5;
+    opacity:0.85;
+    text-shadow:0 0 6px rgba(0,255,240,0.5);
+  }
+
+  .boot-log .dim{ color:var(--text-dim); }
+
+  .cursor{
+    display:inline-block;
+    width:0.55em;
+    background:var(--cyan);
+    animation:blink 1s steps(1) infinite;
+  }
+
+  @keyframes blink{ 50%{ opacity:0; } }
+
+  .neon-title{
+    font-family:'Orbitron', sans-serif;
+    font-weight:900;
+    font-size:clamp(3rem, 13vw, 8.5rem);
+    line-height:0.95;
+    letter-spacing:0.04em;
+    color:#fff;
+    text-shadow:
+      0 0 6px rgba(255,255,255,0.7),
+      0 0 18px var(--cyan),
+      0 0 40px var(--cyan),
+      0 0 2px var(--magenta);
+    opacity:0;
+  }
+
+  .neon-title.lit{
+    animation:flicker-on 1.6s steps(1) forwards;
+  }
+
+  @keyframes flicker-on{
+    0%   { opacity:0; }
+    8%   { opacity:1; }
+    10%  { opacity:0.2; }
+    13%  { opacity:1; }
+    16%  { opacity:0.3; }
+    19%  { opacity:1; }
+    45%  { opacity:1; }
+    47%  { opacity:0.4; }
+    50%  { opacity:1; }
+    100% { opacity:1; }
+  }
+
+  .subtitle{
+    font-size:clamp(0.85rem, 2vw, 1.05rem);
+    color:var(--text-dim);
+    letter-spacing:0.02em;
+    opacity:0;
+  }
+
+  .subtitle.show{
+    animation:fade-up 0.8s ease forwards;
+  }
+
+  @keyframes fade-up{
+    from{ opacity:0; transform:translateY(8px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+
+  .status{
+    font-size:clamp(0.7rem, 1.6vw, 0.8rem);
+    color:var(--amber);
+    opacity:0;
+  }
+
+  .status.show{ animation:fade-up 0.8s ease forwards; }
+
+  .status::before{
+    content:"● ";
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .grid-floor::before{ animation:none; background-position:0 0; }
+    .neon-title{ opacity:1; animation:none; }
+    .subtitle, .status{ opacity:1; animation:none; }
+    .cursor{ animation:none; }
+  }
+
+  @media (max-width:480px){
+    .grid-floor{ height:40%; }
+  }
+</style>
+</head>
 <body>
-  <h1>Ça a marché !</h1>
-  <p>Ce site a été déployé automatiquement par GitHub Actions.</p>
+
+  <div class="backdrop"></div>
+  <div class="grid-floor"></div>
+  <div class="spotlight" id="spotlight"></div>
+
+  <main class="scene">
+    <pre class="boot-log" id="bootLog"></pre>
+    <h1 class="neon-title" id="neonTitle" data-text="WELCOME">WELCOME</h1>
+    <p class="subtitle" id="subtitle">session établie — nœud ganfial.learning</p>
+    <p class="status" id="status">system nominal</p>
+  </main>
+
+  <div class="crt"></div>
+  <div class="vignette"></div>
+
+<script>
+  const lines = [
+    "> initialisation du lien...",
+    "> authentification ......... <span class=\"dim\">OK</span>",
+    "> accès accordé"
+  ];
+
+  const bootEl = document.getElementById('bootLog');
+  const titleEl = document.getElementById('neonTitle');
+  const subEl = document.getElementById('subtitle');
+  const statusEl = document.getElementById('status');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function reveal(){
+    titleEl.classList.add('lit');
+    setTimeout(()=> subEl.classList.add('show'), 900);
+    setTimeout(()=> statusEl.classList.add('show'), 1300);
+  }
+
+  if (reduceMotion){
+    bootEl.innerHTML = lines.join('\n');
+    reveal();
+  } else {
+    let lineIndex = 0, charIndex = 0;
+    const cursor = document.createElement('span');
+    cursor.className = 'cursor';
+    cursor.textContent = '\u00A0';
+
+    function typeNext(){
+      if (lineIndex >= lines.length){
+        cursor.remove();
+        reveal();
+        return;
+      }
+      const raw = lines[lineIndex];
+      const plain = raw.replace(/<[^>]+>/g, '');
+
+      if (charIndex <= plain.length){
+        const shown = plain.slice(0, charIndex);
+        const rows = lines.slice(0, lineIndex).map(l => l).join('\n');
+        bootEl.innerHTML = (rows ? rows + '\n' : '') + shown;
+        bootEl.appendChild(cursor);
+        charIndex++;
+        setTimeout(typeNext, 18 + Math.random()*35);
+      } else {
+        bootEl.innerHTML = lines.slice(0, lineIndex+1).join('\n');
+        lineIndex++;
+        charIndex = 0;
+        setTimeout(typeNext, 220);
+      }
+    }
+    setTimeout(typeNext, 300);
+  }
+
+  window.addEventListener('pointermove', (e)=>{
+    document.getElementById('spotlight').style.setProperty('--mx', e.clientX + 'px');
+    document.getElementById('spotlight').style.setProperty('--my', e.clientY + 'px');
+  });
+</script>
+
 </body>
 </html>
